@@ -23,7 +23,6 @@ class HybridButtonPaginator(
     switchEmoji: ReactionEmoji = if (pages.groups.size == 2) EXPAND_EMOJI else SWITCH_EMOJI,
     bundle: String? = null,
     locale: Locale? = null,
-
     val parentContext: HybridCommandContext<*>,
 ): BaseButtonPaginator(extension, pages, owner, timeoutSeconds, keepEmbed, switchEmoji, bundle, locale) {
     override var components: Components = Components(extension)
@@ -36,6 +35,7 @@ class HybridButtonPaginator(
             setup()
 
             interaction = parentContext.publicFollowUp {
+                allowedMentions { repliedUser = false }
                 embed(embedBuilder)
 
                 with(parentContext) {
@@ -67,6 +67,7 @@ class HybridButtonPaginator(
             interaction!!.delete()
         } else {
             interaction!!.edit {
+                allowedMentions { repliedUser = false }
                 embed(embedBuilder)
                 this.components = mutableListOf()
             }
@@ -78,8 +79,8 @@ class HybridButtonPaginator(
 
 /** Convenience function for creating an interaction button paginator from a paginator builder. **/
 fun HybridButtonPaginator(
+    builder: PaginatorBuilder,
     parentContext: HybridCommandContext<*>,
-    builder: PaginatorBuilder
 ): HybridButtonPaginator = HybridButtonPaginator(
     extension = builder.extension,
     pages = builder.pages,
@@ -92,9 +93,3 @@ fun HybridButtonPaginator(
 
     switchEmoji = builder.switchEmoji ?: if (builder.pages.groups.size == 2) EXPAND_EMOJI else SWITCH_EMOJI,
 )
-
-/** Convenience function for creating an interaction button paginator from a paginator builder. **/
-inline fun HybridCommandContext<*>.paginator(
-    extension: Extension,
-    builder: PaginatorBuilder.() -> Unit
-): HybridButtonPaginator = HybridButtonPaginator(this, PaginatorBuilder(extension).apply(builder))

@@ -6,6 +6,7 @@ import com.kotlindiscord.kord.extensions.commands.MessageCommandContext
 import com.kotlindiscord.kord.extensions.commands.parser.Arguments
 import com.kotlindiscord.kord.extensions.commands.slash.SlashCommandContext
 import com.kotlindiscord.kord.extensions.components.Components
+import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MemberBehavior
 import dev.kord.core.behavior.UserBehavior
@@ -20,6 +21,7 @@ import me.qbosst.kordex.commands.hybrid.builder.HybridMessageModifyBuilder
 import me.qbosst.kordex.commands.hybrid.builder.PublicHybridMessageCreateBuilder
 import me.qbosst.kordex.commands.hybrid.entity.EphemeralHybridMessage
 import me.qbosst.kordex.commands.hybrid.entity.PublicHybridMessage
+import me.qbosst.kordex.pagination.HybridButtonPaginator
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -190,5 +192,19 @@ class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinCompo
         }
 
         startListening(timeoutSeconds)
+    }
+
+    /**
+     * Convenience function to create a button paginator using a builder DSL syntax. Handles the contextual stuff for you.
+     */
+    suspend fun paginator(
+        defaultGroup: String = "",
+        body: PaginatorBuilder.() -> Unit
+    ): HybridButtonPaginator {
+        val builder = PaginatorBuilder(context.command.extension, context.getLocale(), defaultGroup = defaultGroup)
+
+        body(builder)
+
+        return HybridButtonPaginator(builder, this)
     }
 }
