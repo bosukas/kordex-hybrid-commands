@@ -173,8 +173,6 @@ hybridCommand(::RoleViewArgs /* example purpose */) {
 }
 ```
 
-If you don't want this behaviour, you can just leave the `subCommandName` as null.
-
 The same workaround can be applied to group commands.
 
 ```kotlin
@@ -204,6 +202,54 @@ hybridCommand {
     
     group {
         // another group command
+    }
+}
+```
+
+If you don't want this behaviour, you can just leave the `subCommandName` as null.
+
+## Pagination
+
+Hybrid commands also support button pagination. They are pretty similar (if not identical) to how `MessageButtonPaginator` and `InteractionButtonPaginator` work.
+
+You can create a new paginator by using the `paginator` dsl builder inside an `HybridCommandContext`
+
+```kotlin
+hybridCommand {
+    name = "paginator-example"
+    
+    action {
+        val paginator = paginator {
+            addPage(yourPageInstance)
+            
+            addPage(anotherPageInstance)
+            
+            // etc
+        }
+        
+        paginator.send()
+    }
+}
+```
+
+We also provide a convenient dsl page builder extension function to help with creating your paginators. 
+With the page dsl, you can create fields in your page.
+
+```kotlin
+paginator {
+    page {
+        title = "Your First Page"
+        description = "Description about the first page"
+                
+        field("Field 1", inline = true) {
+            "Example Field"
+        }
+    }
+    
+    page {
+        title = "Your Second Page"
+        colour = DISCORD_BLURPLE
+        // etc
     }
 }
 ```
