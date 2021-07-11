@@ -1,2 +1,2 @@
-rootProject.name = "Kordex Hybrid Commands"
+rootProject.name = "kordex-hybrid-commands"
 
