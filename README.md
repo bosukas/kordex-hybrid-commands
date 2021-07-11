@@ -2,6 +2,8 @@
 
 ---
 
+![Build Status](https://badgen.net/github/checks/qbosst/kordex-hybrid-commands/main?icon=github&label=build) ![Release](https://badgen.net/maven/v/metadata-url/https/s01.oss.sonatype.org/service/local/repositories/releases/content/io/github/qbosst/kordex-hybrid-commands/maven-metadata.xml?icon=maven&label=release&color=blue&scale=1) ![Snapshot](https://badgen.net/maven/v/metadata-url/https/s01.oss.sonatype.org/service/local/repositories/snapshots/content/io/github/qbosst/kordex-hybrid-commands/maven-metadata.xml?icon=maven&label=snapshot&color=orange)
+
 ## What is kordex-hybrid-commands?
 
 This is a third-party module for the [Kord-Extensions](https://github.com/Kord-Extensions/kord-extensions) command framework which introduces 'hybrid commands.'
