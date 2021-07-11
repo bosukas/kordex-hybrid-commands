@@ -75,17 +75,17 @@ publishing {
                     url.set("$projectGithubUrl/tree/master")
                 }
             }
+        }
+    }
 
-            repositories {
-                maven {
-                    name = projectArtifactId
-                    url = uri(if(version.endsWith("SNAPSHOT")) snapshotRepoUrl else releaseRepoUrl)
+    repositories {
+        maven {
+            name = "Sonatype"
+            url = uri(if((version as String).endsWith("SNAPSHOT")) snapshotRepoUrl else releaseRepoUrl)
 
-                    credentials {
-                        username = System.getenv("ossrhUsername")
-                        password = System.getenv("ossrhPassword")
-                    }
-                }
+            credentials {
+                username = System.getenv("ossrhUsername")
+                password = System.getenv("ossrhPassword")
             }
         }
     }
