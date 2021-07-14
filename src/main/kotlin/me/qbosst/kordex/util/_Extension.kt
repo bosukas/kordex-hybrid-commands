@@ -3,6 +3,7 @@ package me.qbosst.kordex.util
 import com.kotlindiscord.kord.extensions.CommandRegistrationException
 import com.kotlindiscord.kord.extensions.InvalidCommandException
 import com.kotlindiscord.kord.extensions.annotations.ExtensionDSL
+import com.kotlindiscord.kord.extensions.checks.types.Check
 import com.kotlindiscord.kord.extensions.commands.parser.Arguments
 import com.kotlindiscord.kord.extensions.extensions.Extension
 import dev.kord.core.event.Event
@@ -49,13 +50,13 @@ suspend fun Extension.hybridCommand(
 ): HybridCommand<Arguments> = hybridCommand(null, body)
 
 @ExtensionDSL
-fun Extension.hybridCheck(body: suspend (Event) -> Boolean) {
+fun Extension.hybridCheck(body: Check<Event>) {
     commandChecks.add(body)
     slashCommandChecks.add(body)
 }
 
 @ExtensionDSL
-fun Extension.hybridCheck(vararg checks: suspend (Event) -> Boolean) {
+fun Extension.hybridCheck(vararg checks: Check<Event>) {
     commandChecks.addAll(checks)
     slashCommandChecks.addAll(checks)
 }

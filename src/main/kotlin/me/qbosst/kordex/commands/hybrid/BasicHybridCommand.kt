@@ -2,6 +2,7 @@ package me.qbosst.kordex.commands.hybrid
 
 import com.kotlindiscord.kord.extensions.InvalidCommandException
 import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
+import com.kotlindiscord.kord.extensions.checks.types.Check
 import com.kotlindiscord.kord.extensions.commands.parser.Arguments
 import com.kotlindiscord.kord.extensions.commands.slash.AutoAckType
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -9,6 +10,7 @@ import com.kotlindiscord.kord.extensions.sentry.SentryAdapter
 import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
 import dev.kord.core.event.Event
+import dev.kord.core.event.message.MessageCreateEvent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -81,7 +83,7 @@ open class BasicHybridCommand<T: Arguments>(
     /** Whether this command has a body/action set. **/
     val hasBody: Boolean get() = ::body.isInitialized
 
-    val checkList: MutableList<suspend (Event) -> Boolean> = mutableListOf()
+    val checkList: MutableList<Check<Event>> = mutableListOf()
     val requiredPerms: MutableSet<Permission> = mutableSetOf()
 
     /**
@@ -119,8 +121,8 @@ open class BasicHybridCommand<T: Arguments>(
      *
      * @param checks Checks to apply to this command.
      */
-    fun check(vararg checks: suspend (Event) -> Boolean) {
-        checkList.addAll(checks)
+    fun check(vararg checks: Check<Event>) {
+        checks.forEach { checkList.add(it) }
     }
 
     /**
@@ -128,8 +130,46 @@ open class BasicHybridCommand<T: Arguments>(
      *
      * @param check Check to apply to this command.
      */
-    fun check(check: suspend (Event) -> Boolean) {
+    fun check(check: Check<Event>) {
         checkList.add(check)
+    }
+
+    /**
+     * Define a simple Boolean check which must pass for the command to be executed.
+     *
+     * Boolean checks are simple wrappers around the regular check system, allowing you to define a basic check that
+     * takes an event object and returns a [Boolean] representing whether it passed. This style of check does not have
+     * the same functionality as a regular check, and cannot return a message.
+     *
+     * A command may have multiple checks - all checks must pass for the command to be executed.
+     * Checks will be run in the order that they're defined.
+     *
+     * This function can be used DSL-style with a given body, or it can be passed one or more
+     * predefined functions. See the samples for more information.
+     *
+     * @param checks Checks to apply to this command.
+     */
+    fun booleanCheck(vararg checks: suspend (Event) -> Boolean) {
+        checks.forEach(::booleanCheck)
+    }
+
+    /**
+     * Overloaded simple Boolean check function to allow for DSL syntax.
+     *
+     * Boolean checks are simple wrappers around the regular check system, allowing you to define a basic check that
+     * takes an event object and returns a [Boolean] representing whether it passed. This style of check does not have
+     * the same functionality as a regular check, and cannot return a message.
+     *
+     * @param check Check to apply to this command.
+     */
+    fun booleanCheck(check: suspend (Event) -> Boolean) {
+        check {
+            if(check(event)) {
+                pass()
+            } else {
+                fail()
+            }
+        }
     }
 
     /** If your bot requires permissions to be able to execute the command, add them using this function. **/
