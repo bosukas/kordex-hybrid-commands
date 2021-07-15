@@ -57,8 +57,10 @@ publishing {
                 url.set(projectGithubUrl)
 
                 licenses {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
+                    license {
+                        name.set("MIT")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
                 }
 
                 developers {
