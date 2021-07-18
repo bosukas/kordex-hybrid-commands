@@ -164,6 +164,23 @@ class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinCompo
         return components
     }
 
+    /**
+     * Convenience function for adding components to your message via the [Components] class.
+     *
+     * @see Components
+     */
+    suspend fun HybridMessageModifyBuilder.components(
+        timeoutSeconds: Long? = null,
+        body: suspend Components.() -> Unit
+    ): Components {
+        val components = Components(context.command.extension)
+
+        body(components)
+        setup(components, timeoutSeconds)
+
+        return components
+    }
+
     suspend fun PublicHybridMessageCreateBuilder.setup(
         component: Components,
         timeoutSeconds: Long? = null
