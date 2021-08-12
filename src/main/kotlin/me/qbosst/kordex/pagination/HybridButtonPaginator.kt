@@ -9,6 +9,11 @@ import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.User
+import dev.kord.rest.builder.message.create.MessageCreateBuilder
+import dev.kord.rest.builder.message.create.allowedMentions
+import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.allowedMentions
+import dev.kord.rest.builder.message.modify.embed
 import me.qbosst.kordex.commands.hybrid.HybridCommandContext
 import me.qbosst.kordex.commands.hybrid.behaviour.edit
 import me.qbosst.kordex.commands.hybrid.entity.PublicHybridMessage
@@ -36,7 +41,7 @@ class HybridButtonPaginator(
 
             interaction = parentContext.publicFollowUp {
                 allowedMentions { repliedUser = false }
-                embed(embedBuilder)
+                embed { applyPage() }
 
                 with(parentContext) {
                     this@publicFollowUp.setup(this@HybridButtonPaginator.components, timeoutSeconds)
@@ -46,7 +51,7 @@ class HybridButtonPaginator(
             updateButtons()
 
             interaction!!.edit {
-                embed(embedBuilder)
+                embed { applyPage() }
 
                 with(parentContext) {
                     this@edit.setup(this@HybridButtonPaginator.components, timeoutSeconds)
@@ -68,7 +73,8 @@ class HybridButtonPaginator(
         } else {
             interaction!!.edit {
                 allowedMentions { repliedUser = false }
-                embed(embedBuilder)
+                embed { applyPage() }
+
                 this.components = mutableListOf()
             }
         }

@@ -7,6 +7,7 @@ import com.kotlindiscord.kord.extensions.commands.parser.Arguments
 import com.kotlindiscord.kord.extensions.commands.slash.SlashCommandContext
 import com.kotlindiscord.kord.extensions.components.Components
 import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
+import com.kotlindiscord.kord.extensions.utils.getKoin
 import dev.kord.core.Kord
 import dev.kord.core.behavior.MemberBehavior
 import dev.kord.core.behavior.UserBehavior
@@ -16,18 +17,17 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.event.Event
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.rest.builder.message.create.actionRow
+import dev.kord.rest.builder.message.modify.actionRow
 import me.qbosst.kordex.commands.hybrid.builder.EphemeralHybridMessageCreateBuilder
 import me.qbosst.kordex.commands.hybrid.builder.HybridMessageModifyBuilder
 import me.qbosst.kordex.commands.hybrid.builder.PublicHybridMessageCreateBuilder
 import me.qbosst.kordex.commands.hybrid.entity.EphemeralHybridMessage
 import me.qbosst.kordex.commands.hybrid.entity.PublicHybridMessage
 import me.qbosst.kordex.pagination.HybridButtonPaginator
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinComponent {
-
-    private val bot: ExtensibleBot by inject()
+@JvmInline
+value class HybridCommandContext<T: Arguments>(val context: CommandContext) {
 
     val kord: Kord get() = context.eventObj.kord
     val eventObj: Event get() = context.eventObj
@@ -71,7 +71,7 @@ class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinCompo
 
     suspend fun getPrefix() = when(context) {
         is SlashCommandContext<*> -> "/"
-        is MessageCommandContext<*> -> with(bot.settings.messageCommandsBuilder) {
+        is MessageCommandContext<*> -> with(getKoin().get<ExtensibleBot>().settings.messageCommandsBuilder) {
             prefixCallback.invoke(context.eventObj as MessageCreateEvent, defaultPrefix)
         }
         else -> error("Unknown context type provided.")
@@ -103,7 +103,7 @@ class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinCompo
                     channel.id,
                     when(messageId) {
                         null -> messageBuilder.toMessageRequest()
-                        else -> messageBuilder.toMessageRequest(messageId)
+                        else -> messageBuilder.toMessageRequest(messageReference = messageId)
                     }
                 ) to null
             }
@@ -136,7 +136,7 @@ class HybridCommandContext<T: Arguments>(val context: CommandContext): KoinCompo
                     channel.id,
                     when(messageId) {
                         null -> messageBuilder.toMessageRequest()
-                        else -> messageBuilder.toMessageRequest(messageId)
+                        else -> messageBuilder.toMessageRequest(messageReference = messageId)
                     }
                 ) to null
             }

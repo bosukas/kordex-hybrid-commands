@@ -5,14 +5,14 @@ plugins {
 }
 
 project.group = "io.github.qbosst"
-project.version = "1.0.1-SNAPSHOT"
+project.version = "1.0.2-SNAPSHOT"
 val projectArtifactId = "kordex-hybrid-commands"
 val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 
 val releaseRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
 val snapshotRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 
-val kordexVersion = "1.4.3-SNAPSHOT"
+val kordexVersion = "1.4.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -27,6 +27,7 @@ repositories {
 dependencies {
     compileOnly("com.kotlindiscord.kord.extensions:kord-extensions:$kordexVersion")
     implementation(kotlin("stdlib"))
+    testImplementation("com.kotlindiscord.kord.extensions:kord-extensions:$kordexVersion")
 }
 
 val sourcesJar = task("sourceJar", Jar::class) {

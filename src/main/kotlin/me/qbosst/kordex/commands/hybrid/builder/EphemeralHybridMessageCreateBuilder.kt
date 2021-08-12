@@ -2,15 +2,13 @@ package me.qbosst.kordex.commands.hybrid.builder
 
 import dev.kord.common.entity.DiscordMessageReference
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.entity.optional.Optional
-import dev.kord.common.entity.optional.OptionalBoolean
-import dev.kord.common.entity.optional.OptionalSnowflake
+import dev.kord.common.entity.optional.*
 import dev.kord.common.entity.optional.delegate.delegate
-import dev.kord.common.entity.optional.map
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.component.MessageComponentBuilder
 import dev.kord.rest.builder.message.AllowedMentionsBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.create.EphemeralMessageCreateBuilder
 import dev.kord.rest.json.request.FollowupMessageCreateRequest
 import dev.kord.rest.json.request.MessageCreateRequest
 import dev.kord.rest.json.request.MultipartFollowupMessageCreateRequest
@@ -19,84 +17,56 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class EphemeralHybridMessageCreateBuilder
-    : HybridRequestBuilder<MultipartMessageCreateRequest, MultipartFollowupMessageCreateRequest> {
+class EphemeralHybridMessageCreateBuilder : EphemeralMessageCreateBuilder,
+    HybridRequestBuilder<MultipartMessageCreateRequest, MultipartFollowupMessageCreateRequest> {
 
-    private var _content: Optional<String> = Optional.Missing()
-    var content: String? by ::_content.delegate()
+    override var content: String? = null
 
-    private var _tts: OptionalBoolean = OptionalBoolean.Missing
-    var tts: Boolean? by ::_tts.delegate()
+    override var tts: Boolean? = null
 
-    private var _allowedMentions: Optional<AllowedMentionsBuilder> = Optional.Missing()
-    var allowedMentions: AllowedMentionsBuilder? by ::_allowedMentions.delegate()
+    override val embeds: MutableList<EmbedBuilder> = mutableListOf()
 
-    private var _embed: Optional<EmbedBuilder> = Optional.Missing()
-    var embed: EmbedBuilder? by ::_embed.delegate()
+    override var allowedMentions: AllowedMentionsBuilder? = null
 
-    val components: MutableList<MessageComponentBuilder> = mutableListOf()
+    override val components: MutableList<MessageComponentBuilder> = mutableListOf()
 
-    @OptIn(ExperimentalContracts::class)
-    inline fun actionRow(builder: ActionRowBuilder.() -> Unit) {
-        contract {
-            callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
-        }
-
-        components.add(ActionRowBuilder().apply(builder))
-    }
-
-
-    /**
-     * Configures the mentions that should trigger a mention (aka ping). Not calling this function will result in the default behavior
-     * (ping everything), calling this function but not configuring it before the request is build will result in all
-     * pings being ignored.
-     */
-    @OptIn(ExperimentalContracts::class)
-    inline fun allowedMentions(block: AllowedMentionsBuilder.() -> Unit = {}) {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        allowedMentions = (allowedMentions ?: AllowedMentionsBuilder()).apply(block)
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    inline fun embed(block: EmbedBuilder.() -> Unit) {
-        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        embed = (embed ?: EmbedBuilder()).apply(block)
-    }
-
-    fun toMessageRequest(messageReference: Snowflake): MultipartMessageCreateRequest = MultipartMessageCreateRequest(
-        MessageCreateRequest(
-            content = _content,
-            tts = _tts,
-            embed = _embed.map { it.toRequest() },
-            allowedMentions = _allowedMentions.map { it.build() },
-            messageReference = Optional(
-                DiscordMessageReference(
-                    id = OptionalSnowflake.Value(messageReference),
-                    failIfNotExists = OptionalBoolean.Value(true)
-                )
+    fun toMessageRequest(
+        messageReference: Snowflake? = null,
+        failIfNotExists: Boolean? = null,
+        nonce: String? = null,
+    ): MultipartMessageCreateRequest {
+        return MultipartMessageCreateRequest(
+            MessageCreateRequest(
+                content = Optional(content).coerceToMissing(),
+                nonce = Optional(nonce).coerceToMissing(),
+                tts = Optional(tts).coerceToMissing().toPrimitive(),
+                embeds = Optional(embeds).mapList { it.toRequest() },
+                allowedMentions = Optional(allowedMentions).coerceToMissing().map { it.build() },
+                messageReference = messageReference?.let {
+                    Optional(
+                        DiscordMessageReference(
+                            OptionalSnowflake.Value(it),
+                            failIfNotExists = Optional(failIfNotExists).coerceToMissing().toPrimitive()
+                        )
+                    )
+                } ?: Optional.Missing(),
+                components = Optional(components).coerceToMissing().mapList { it.build() }
             ),
-            components = Optional.missingOnEmpty(components.map(MessageComponentBuilder::build))
         )
-    )
+    }
 
-    override fun toMessageRequest(): MultipartMessageCreateRequest = MultipartMessageCreateRequest(
-        MessageCreateRequest(
-            content = _content,
-            tts = _tts,
-            embed = _embed.map { it.toRequest() },
-            allowedMentions = _allowedMentions.map { it.build() },
-            components = Optional.missingOnEmpty(components.map(MessageComponentBuilder::build))
+    override fun toSlashRequest(): MultipartFollowupMessageCreateRequest {
+        return MultipartFollowupMessageCreateRequest(
+            FollowupMessageCreateRequest(
+                content = Optional(content).coerceToMissing(),
+                tts = Optional(tts).coerceToMissing().toPrimitive(),
+                embeds = Optional(embeds).mapList { it.toRequest() },
+                allowedMentions = Optional(allowedMentions).coerceToMissing().map { it.build() },
+                components = Optional(components).coerceToMissing().mapList { it.build() }
+            ),
         )
-    )
+    }
 
-    override fun toSlashRequest(): MultipartFollowupMessageCreateRequest = MultipartFollowupMessageCreateRequest(
-        FollowupMessageCreateRequest(
-            content = _content,
-            tts = _tts,
-            embeds = if(_embed.value == null) Optional.Missing() else _embed.map { listOf(it.toRequest()) },
-            allowedMentions = _allowedMentions.map { it.build() },
-            components = Optional.missingOnEmpty(components.map(MessageComponentBuilder::build))
-        )
-    )
+    override fun toMessageRequest(): MultipartMessageCreateRequest = toMessageRequest(null, null, null)
 
 }
