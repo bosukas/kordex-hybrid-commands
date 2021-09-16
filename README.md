@@ -1,23 +1,15 @@
-# kordex-hybrid-commands
-
----
+# Hybrid Commands
 
 ![Build Status](https://badgen.net/github/checks/qbosst/kordex-hybrid-commands/main?icon=github&label=build) ![Release](https://badgen.net/maven/v/metadata-url/https/s01.oss.sonatype.org/service/local/repositories/releases/content/io/github/qbosst/kordex-hybrid-commands/maven-metadata.xml?icon=maven&label=release&color=blue&scale=1) ![Snapshot](https://badgen.net/maven/v/metadata-url/https/s01.oss.sonatype.org/service/local/repositories/snapshots/content/io/github/qbosst/kordex-hybrid-commands/maven-metadata.xml?icon=maven&label=snapshot&color=orange)
 
-## What is kordex-hybrid-commands?
+Hybrid commands are commands that can translate to both slash commands and chat commands. This is useful for when you want to create a slash and chat command that have the same functionality.
 
-This is a third-party module for the [Kord-Extensions](https://github.com/Kord-Extensions/kord-extensions) command framework which introduces 'hybrid commands.'
-These commands are capable of translating to both slash and message commands.
+## Example Use Case
 
----
-## Hybrid Commands Quickstart
-
-### Example Hybrid Command
-Let's say you want to have a basic 'ping' command for both command types (slash and message). 
-Usually with Kord-Extensions you would write these commands out separately.
+Let's suppose that you have a basic ping command for the command types; slash and chat, that returns a message back to the user when invoked. Usually with Kord-Extensions you would write these commands out separately.
 
 ```kotlin
-command {
+chatCommand {
     name = "Ping"
     description = "Sends a response back"
     
@@ -26,136 +18,130 @@ command {
     }
 }
 
-slashCommand {
+publicSlashCommand {
     name = "Ping"
     description = "Sends a response back"
-    autoAckType = AutoAckType.PUBLIC
     
     action {
-        publicFollowUp {
-            content = "Pong"
-        }
+        respond { content = "Pong" }
     }
 }
 ```
 
-Although this works, having 2 commands that have the same functionality can be harder to keep consistent and manage.
-Hybrid Commands solves this by combining the slash and message command dsl builder into one.
+Although this works, having 2 commands for the same purpose can be hard to manage and keep consistent. If you decide to change anything about your command, you will have to do this for both commands. Hybrid Commands solves this by combining the slash and chat command dsl builder into one.
 
-You can create a hybrid command using the `hybridCommand` dsl builder in the `Extensions` class.
-Below is an example of how a hybrid ping command would be written.
+You can create a hybrid command using the `pubicHybridCommand` or `ephemeralHybridCommand` dsl builder in the `Extension` class. Our ping command would now be written like this.
+
 ```kotlin
-hybridCommand {
+publicHybridCommand {
     name = "Ping"
     description = "Sends a response back"
     
     action {
-        publicFollowUp {
-            content = "Pong"
-        }
+        respond { content = "Pong" }
     }
 }
 ```
 
-### Arguments
+## Arguments
 
-Just like slash and message commands, hybrid commands also has support for arguments.
-
+Just like slash and chat commands, hybrid commands have support for arguments.
 ```kotlin
 class AvatarArgs: Arguments() {
     val user by user("user", "The user's avatar you would like to display")
 }
 
-hybridCommand(::AvatarArgs) {
+publicHybridCommand(::AvatarArgs) {
     name = "avatar"
     description = "Displays the mentioned user's avatar"
     
-    action {
-        // etc
+    action { 
+        val user = arguments.user
+        // display user avatar
     }
 }
 ```
 
-### Sending Responses
-Similar to slash commands, hybrid commands have two ways of responding to a message; `publicFollowUp` and `ephemeralFollowUp`.
-Hybrid Commands default to an `autoAckType` of `NONE` and interactions are only acked when either a `publicFollowUp` or `ephemeralFollowUp` is sent.
+## Public And Ephemeral Hybrid Commands
 
-`publicFollowUp` will send a public follow-up message in the case of a slash command, and a normal message in the case of a message command.
+Similar to slash commands, hybrid commands two dsl builders; `publicHybridCommand` and `ephemeralHybridCommand`. When a hybrid command gets translated into the slash command equivalent, they will use an `autoAckType` of `NONE` and interactions are only acked when either a `publicFollowUp` or `ephemeralFollowUp` is sent.
 
-`ephemeralFollowUp` will send an ephemeral follow-up in the case of a slash command, however in the case of a message command, a normal message will be sent. Message commands cannot respond ephemerally to a user.
+A `publicHybridCommand` will send a public follow up in the case of a slash command, and a normal reply message in the case of a message command.
+
+A `ephemeralHybridCommand` will send an ephemeral follow up in the case of a slash command, and a **normal** reply in the case of a message command. Message commands **do not** have support for ephemeral messages.
 
 ```kotlin
 action { 
-    publicFollowUp { 
-        content = ""
+    publicHybridCommand {
+        name = "public"
+        description = "A public hybrid command"
         
-        embed {}
-        // etc 
+        action { 
+            respond { 
+                content = "This is a public hybrid command"
+                
+                embed {
+                    // etc
+                }
+            } 
+        }
     }
+    
+    ephemeralHybridCommand {
+        name = "ephemeral"
+        description = "An ephemeral hybrid command"
         
-    ephemeralFollowUp {
-        content = ""
-        
-        embed {}
-        // etc
+        action {
+            respond { 
+                content = "This is an ephemeral hybrid command"
+                
+                embed { 
+                    // etc
+                }
+            } 
+        }
     }
 }
 ```
 
-If your command does a lot of work before sending a message and needs to be acknowledged before, you can do this by either configuring the slash settings `autoAck` attribute (demonstrated in the next section) or acknowledging it yourself.
+## Specific Command Features
 
-In the case of acknowledging the interaction yourself, you will need to check if the context is a `SlashCommandContext`, and then ack it yourself since hybrid commands do not have the concept of acking.
-
-```kotlin
-if(context is SlashCommandContext<*>) {
-    context.ack(false) // public ack
-    context.ack(true) // ephemeral ack
-}
-```
-
-
-### Specific Command Features
-
-To configure specific command type features, hybrid commands have a `SlashSettings` and `MessageSettigns` object that can be accessed using the `slashSettings` and `messageSettings` builder.
+Slash commands and chat commands have some properties that are not shared and therefore could not be included in the Hybrid Commands builder. To configure these properties, hybrid commands have a `SlashCommandSettings` and `ChatCommandSettings` property that can be accessed using the `slashCommandSettings` and `chatCommandSettings` builder.
 
 ```kotlin
 hybridCommand(::AvatarArgs) {
     name = "avatar"
 
-    messageSettings { aliases = arrayOf("av") }
-    slashSettings { autoAck = AutoAckType.PUBLIC /* default: NONE */ } 
+    chatCommandSettings { aliases = arrayOf("av") }
+    slashCommandSettings { guild( /* your guild id */ ) } 
 
     action {
-        //etc
+        // display user avatar
     }
 }
 ```
 
-### Sub Commands & Group Commands
-Hybrid Commands also support subcommands and group commands. The only rule is that a top level command cannot consist of both group commands and subcommands.
+## Subcommands & Group Commands
 
-With slash commands, you can't have both sub/group commands along with a command action, but hybrid command allows both.
-This will work as expected with message commands, however in the case of a top level slash commands with groups/subcommands, the action will not be registered.
+Hybrid commands also have support for subcommands and group commands. The only rule is that a top level hybrid command cannot contain both group commands and subcommands.
 
-There is a workaround for this problem, you can remap the top-level's command action to a sub command, as demonstrated in the example below.
-However, keep in mind that this will only work when your top level command consists of only subcommands.
+With slash commands, you can't have both sub/group commands along with a command action, but hybrid commands allows both. This will work as expected with message commands, however in the case of a top level slash command with group/sub commands, the action will not be registered.
+
+In this example, the only **available slash commands** would be
+* /roles add
+* /roles remove
 ```kotlin
-hybridCommand(::RoleViewArgs /* example purpose */) {
+publicHybridCommand(::RoleViewArgs) {
     name = "roles"
     description = "Views the mentioned user's roles"
     
-    slashSettings { 
-        subCommandName = "view"
-        // subCommandDescription - sets the command description for the remapped subcommand
-    }
-    
-    // message command will stay as /roles
-    // slash command action will be remapped to /roles view
+    // message command will register this action 
+    // slash command will not register this action
     action {
         // views a users roles
     }
     
-    subCommand(::RoleAddArgs /* example purpose */) {
+    publicSubCommand(::RoleAddArgs) {
         name = "add"
         description = "Adds the role to the mentioned user"
         
@@ -164,7 +150,7 @@ hybridCommand(::RoleViewArgs /* example purpose */) {
         }
     }
     
-    subCommand(::RoleRemoveArgs /* example purpose */) {
+    publicSubCommand(::RoleRemoveArgs) {
         name = "remove"
         description = "Removes the role from the mentioned user"
         
@@ -175,26 +161,50 @@ hybridCommand(::RoleViewArgs /* example purpose */) {
 }
 ```
 
+Luckily, there is a workaround for this problem. Hybrid Commands lets you re-map the command action to a slash sub command, using the `slashCommandSettings` method.
+
+**Available slash commands**
+* /roles add
+* /roles remove
+* /roles view
+```kotlin
+hybridCommand(::RoleViewArgs /* demonstration purpose */) {
+    name = "roles"
+    description = "Views the mentioned user's roles"
+    
+    slashCommandSettings { 
+       subCommandName = "view"
+       // subCommandDescription - if unset, the subcommand will use the top level command's description
+    }
+    
+    // chat command will register this action 
+    // slash command will remap this action to /roles view
+    action {
+        // views a users roles
+    }
+}
+```
+
 The same workaround can be applied to group commands.
 
 ```kotlin
-hybridCommand {
-    name = "command-example"
+publicHybridCommand {
+    name = "example"
     description = "example-description"
     
-    group {
-        name = "group-example"
+    publicGroupCommand {
+        name = "group"
         
-        slashSettings { subCommandName = "remapped" }
+        slashCommandSettings { subCommandName = "remapped" }
         
-        // group command action remappped to /command-example group-example remapped
-        // message command action stays at {prefix}command-example group-example
+        // group command action re-mappped to /command group remapped
+        // chat command action stays at {prefix}command group
         action {
             // do stuff
         }
         
-        subCommand {
-            name = "example subcommand"
+        publicSubCommand {
+            name = "subcommand"
             
             action {
                 // do stuff
@@ -202,29 +212,30 @@ hybridCommand {
         }
     }
     
-    group {
+    ephmerealGroup {
         // another group command
     }
 }
 ```
 
-If you don't want this behaviour, you can just leave the `subCommandName` as null.
+If you don't want this behaviour, you can leave the `subCommandName` as `null` (default).
 
 ## Pagination
 
 Hybrid commands also support button pagination. They are pretty similar (if not identical) to how `MessageButtonPaginator` and `InteractionButtonPaginator` work.
 
-You can create a new paginator by using the `paginator` dsl builder inside an `HybridCommandContext`
+You can create a paginator by using the `paginator` dsl builder inside the hybrid command `action`
 
 ```kotlin
-hybridCommand {
+publicHybridCommand {
     name = "paginator-example"
+    description = "Sends a paginator"
     
     action {
-        val paginator = paginator {
-            addPage(yourPageInstance)
+        val paginator = respondingPaginator {
+            page { /* page 1 */ }
             
-            addPage(anotherPageInstance)
+            page { /* page 2 */ }
             
             // etc
         }
@@ -234,38 +245,13 @@ hybridCommand {
 }
 ```
 
-We also provide a convenient dsl page builder extension function to help with creating your paginators. 
-With the page dsl, you can create fields in your page.
-
-```kotlin
-paginator {
-    page {
-        title = "Your First Page"
-        description = "Description about the first page"
-                
-        field("Field 1", inline = true) {
-            "Example Field"
-        }
-    }
-    
-    page {
-        title = "Your Second Page"
-        colour = DISCORD_BLURPLE
-        // etc
-    }
-}
-```
-
----
-## Documentation
-
-Coming soon...
-
----
 ## Installation
 
-### Requirements
-You will need to have the [Kord-Extensions](https://github.com/Kord-Extensions/kord-extensions) command framework already installed.
+You can get the latest version by checking the button at the top of this page.
+`1.0.0-SNAPSHOT` -> Uses Kord-Extensions `1.4.2-SNAPSHOT`
+`1.0.1-SNAPSHOT` -> Uses Kord-Extensions `1.4.3-SNAPSHOT`
+`1.0.2-SNAPSHOT` -> Uses Kord-Extensions `1.4.4-SNAPSHOT`
+`1.0.3-SNAPSHOT` -> Uses Kord-Extensions `1.5.0-SNAPSHOT`
 
 ### Gradle (Kotlin)
 ```kotlin
@@ -277,7 +263,7 @@ repositories {
 ---
 ```kotlin
 dependencies {
-    implementation("io.github.qbosst:kordex-hybrid-commands:1.0.0-SNAPSHOT")
+    implementation("io.github.qbosst:kordex-hybrid-commands:{version}")
 }
 ```
 
@@ -292,7 +278,7 @@ repositories {
 ---
 ```groovy
 dependencies {
-    implementation "io.github.qbosst:kordex-hybrid-commands:1.0.0-SNAPSHOT"
+    implementation "io.github.qbosst:kordex-hybrid-commands:{version}"
 }
 ```
 
@@ -311,6 +297,14 @@ dependencies {
 <dependency>
     <groupId>io.github.qbosst</groupId>
     <artifactId>kordex-hybrid-commands</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>{version}</version>
 </dependency>
 ```
+
+## Support
+
+If you have any questions, issues, etc, you can ping me on the Kotlin Discord server `q bosst#2456` or create an issue on the github.
+
+Contributions are also welcome!
+
+Thanks!
