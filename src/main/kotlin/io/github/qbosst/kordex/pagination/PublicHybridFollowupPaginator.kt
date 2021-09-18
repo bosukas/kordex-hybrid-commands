@@ -5,18 +5,17 @@ import com.kotlindiscord.kord.extensions.pagination.EXPAND_EMOJI
 import com.kotlindiscord.kord.extensions.pagination.SWITCH_EMOJI
 import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
+import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.ReactionEmoji
-import dev.kord.core.entity.User
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
-import io.github.qbosst.kordex.commands.hybrid.ephemeral.EphemeralHybridCommandContext
 import io.github.qbosst.kordex.commands.hybrid.public.PublicHybridCommandContext
 import io.github.qbosst.kordex.entity.PublicHybridMessage
 import java.util.*
 
 class PublicHybridFollowupPaginator(
     pages: Pages,
-    owner: User? = null,
+    owner: UserBehavior? = null,
     timeoutSeconds: Long? = null,
     keepEmbed: Boolean = true,
     switchEmoji: ReactionEmoji = if (pages.groups.size == 2) EXPAND_EMOJI else SWITCH_EMOJI,

@@ -9,8 +9,8 @@ project.version = "1.0.3-SNAPSHOT"
 val projectArtifactId = "kordex-hybrid-commands"
 val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 
-val releaseRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-val snapshotRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+val releaseRepoUrl = "https://maven.kotlindiscord.com/repository/community-releases/"
+val snapshotRepoUrl = "https://maven.kotlindiscord.com/repository/community-snapshots/"
 
 val kordexVersion = "1.5.0-SNAPSHOT"
 
@@ -84,7 +84,6 @@ publishing {
 
     repositories {
         maven {
-            name = "Sonatype"
             url = uri(if((version as String).endsWith("SNAPSHOT")) snapshotRepoUrl else releaseRepoUrl)
 
             credentials {
