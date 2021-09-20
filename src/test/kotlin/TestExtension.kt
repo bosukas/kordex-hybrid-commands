@@ -1,4 +1,7 @@
 import com.kotlindiscord.kord.extensions.extensions.Extension
+import com.kotlindiscord.kord.extensions.extensions.publicSlashCommand
+import com.kotlindiscord.kord.extensions.interactions.edit
+import com.kotlindiscord.kord.extensions.interactions.respond
 import io.github.qbosst.kordex.commands.hybrid.*
 import io.github.qbosst.kordex.entity.EphemeralHybridMessage
 import kotlinx.coroutines.delay

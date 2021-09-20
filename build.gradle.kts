@@ -5,23 +5,20 @@ plugins {
 }
 
 project.group = "io.github.qbosst"
-project.version = "1.0.3-SNAPSHOT"
+project.version = "1.0.byte-SNAPSHOT"
 val projectArtifactId = "kordex-hybrid-commands"
 val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 
 val releaseRepoUrl = "https://maven.kotlindiscord.com/repository/community-releases/"
 val snapshotRepoUrl = "https://maven.kotlindiscord.com/repository/community-snapshots/"
 
-val kordexVersion = "1.5.0-SNAPSHOT"
+val kordexVersion = "1.5.byte-SNAPSHOT"
 
 repositories {
     mavenCentral()
 
     maven("https://oss.sonatype.org/content/repositories/snapshots")
-    maven {
-        name = "Kotlin Discord"
-        url = uri("https://maven.kotlindiscord.com/repository/maven-public/")
-    }
+    maven("https://nexus.zerotwo.bot/repository/m2-snapshots-public/")
 }
 
 dependencies {
@@ -39,6 +36,10 @@ val sourcesJar = task("sourceJar", Jar::class) {
 val javadocJar = task("javadocJar", Jar::class) {
     archiveClassifier.set("javadoc")
     from(tasks.javadoc)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
+    this.kotlinOptions.jvmTarget = "9"
 }
 
 publishing {
