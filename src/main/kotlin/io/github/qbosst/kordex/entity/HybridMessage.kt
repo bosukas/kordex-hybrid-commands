@@ -14,8 +14,7 @@ import dev.kord.core.supplier.EntitySupplier
 import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.core.supplier.getChannelOf
 import dev.kord.core.supplier.getChannelOfOrNull
-import io.github.qbosst.kordex.builders.EphemeralHybridMessageModifyBuilder
-import io.github.qbosst.kordex.builders.PublicHybridMessageModifyBuilder
+import io.github.qbosst.kordex.builders.HybridMessageModifyBuilder
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -44,14 +43,14 @@ class EphemeralHybridMessage(
     override val supplier: EntitySupplier = kord.defaultSupplier
 ): HybridMessage() {
     @OptIn(ExperimentalContracts::class)
-    suspend inline fun edit(builder: EphemeralHybridMessageModifyBuilder.() -> Unit): EphemeralHybridMessage {
+    suspend inline fun edit(builder: HybridMessageModifyBuilder.() -> Unit): EphemeralHybridMessage {
         contract { callsInPlace(builder, InvocationKind.EXACTLY_ONCE) }
-        val builder = EphemeralHybridMessageModifyBuilder().apply(builder)
+        val builder = HybridMessageModifyBuilder().apply(builder)
 
         val response = if(isInteraction) {
-            kord.rest.interaction.modifyFollowupMessage(applicationId!!, token!!, id, builder.toFollowupMessageModifyRequest())
+            kord.rest.interaction.modifyFollowupMessage(applicationId!!, token!!, id, builder.toFollowupRequest())
         } else {
-            kord.rest.channel.editMessage(channelId, id, builder.toMessagePatchRequest())
+            kord.rest.channel.editMessage(channelId, id, builder.toChatRequest())
         }
 
         return EphemeralHybridMessage(Message(response.toData(), kord), applicationId, token, kord)
@@ -72,14 +71,14 @@ class PublicHybridMessage(
     override val supplier: EntitySupplier = kord.defaultSupplier
 ): HybridMessage() {
     @OptIn(ExperimentalContracts::class)
-    suspend inline fun edit(builder: PublicHybridMessageModifyBuilder.() -> Unit): PublicHybridMessage {
+    suspend inline fun edit(builder: HybridMessageModifyBuilder.() -> Unit): PublicHybridMessage {
         contract { callsInPlace(builder, InvocationKind.EXACTLY_ONCE) }
-        val builder = PublicHybridMessageModifyBuilder().apply(builder)
+        val builder = HybridMessageModifyBuilder().apply(builder)
 
         val response = if(isInteraction) {
-            kord.rest.interaction.modifyFollowupMessage(applicationId!!, token!!, id, builder.toFollowupMessageModifyRequest())
+            kord.rest.interaction.modifyFollowupMessage(applicationId!!, token!!, id, builder.toFollowupRequest())
         } else {
-            kord.rest.channel.editMessage(channelId, id, builder.toMessagePatchRequest())
+            kord.rest.channel.editMessage(channelId, id, builder.toChatRequest())
         }
 
         return PublicHybridMessage(Message(response.toData(), kord), applicationId, token, kord)

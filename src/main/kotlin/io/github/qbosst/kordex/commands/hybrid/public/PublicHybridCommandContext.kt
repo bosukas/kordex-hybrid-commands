@@ -3,12 +3,10 @@ package io.github.qbosst.kordex.commands.hybrid.public
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.CommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.PublicSlashCommandContext
-import com.kotlindiscord.kord.extensions.interactions.PublicInteractionContext
-import com.kotlindiscord.kord.extensions.pagination.PublicFollowUpPaginator
 import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import dev.kord.core.cache.data.toData
 import dev.kord.core.entity.Message
-import io.github.qbosst.kordex.builders.PublicHybridMessageCreateBuilder
+import io.github.qbosst.kordex.builders.HybridMessageCreateBuilder
 import io.github.qbosst.kordex.commands.hybrid.HybridCommandContext
 import io.github.qbosst.kordex.entity.PublicHybridMessage
 import io.github.qbosst.kordex.pagination.PublicHybridFollowupPaginator
@@ -23,22 +21,22 @@ class PublicHybridCommandContext<A: Arguments>(
 
     @OptIn(ExperimentalContracts::class)
     suspend inline fun respond(
-        builder: PublicHybridMessageCreateBuilder.() -> Unit
+        builder: HybridMessageCreateBuilder.() -> Unit
     ): PublicHybridMessage {
         contract { callsInPlace(builder, InvocationKind.EXACTLY_ONCE) }
-        val builder = PublicHybridMessageCreateBuilder().apply(builder)
+        val builder = HybridMessageCreateBuilder(false).apply(builder)
 
         val (response, interaction) = if(isSlashContext) {
             val context = (slashContext as PublicSlashCommandContext<A>)
             kord.rest.interaction.createFollowupMessage(
                 context.interactionResponse.applicationId,
                 context.interactionResponse.token,
-                builder.toFollowupMessageCreateRequest()
+                builder.toFollowupRequest()
             ) to context.interactionResponse
         } else {
             kord.rest.channel.createMessage(
                 chatContext.channel.id,
-                builder.toMessageCreateRequest(messageReference = message?.id)
+                builder.toChatRequest(messageReference = message?.id)
             ) to null
         }
 

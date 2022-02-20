@@ -9,7 +9,9 @@ import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.rest.builder.message.create.embed
 import dev.kord.rest.builder.message.modify.embed
+import io.github.qbosst.kordex.builders.embed
 import io.github.qbosst.kordex.commands.hybrid.public.PublicHybridCommandContext
+import io.github.qbosst.kordex.components.applyComponents
 import io.github.qbosst.kordex.entity.PublicHybridMessage
 import java.util.*
 
@@ -32,9 +34,7 @@ class PublicHybridFollowupPaginator(
             message = context.respond {
                 embed { applyPage() }
 
-                with(this@PublicHybridFollowupPaginator.components) {
-                    this@respond.applyToMessage()
-                }
+                applyComponents(this@PublicHybridFollowupPaginator.components)
             }
         } else {
             updateButtons()
@@ -42,9 +42,7 @@ class PublicHybridFollowupPaginator(
             message!!.edit {
                 embed { applyPage() }
 
-                with(this@PublicHybridFollowupPaginator.components) {
-                    this@edit.applyToMessage()
-                }
+                applyComponents(this@PublicHybridFollowupPaginator.components)
             }
         }
     }

@@ -6,11 +6,10 @@ import com.kotlindiscord.kord.extensions.commands.application.slash.EphemeralSla
 import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import dev.kord.core.cache.data.toData
 import dev.kord.core.entity.Message
-import io.github.qbosst.kordex.builders.EphemeralHybridMessageCreateBuilder
+import io.github.qbosst.kordex.builders.HybridMessageCreateBuilder
 import io.github.qbosst.kordex.commands.hybrid.HybridCommandContext
 import io.github.qbosst.kordex.entity.EphemeralHybridMessage
 import io.github.qbosst.kordex.pagination.EphemeralHybridFollowupPaginator
-import io.github.qbosst.kordex.pagination.PublicHybridFollowupPaginator
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -22,22 +21,22 @@ class EphemeralHybridCommandContext<A: Arguments>(
 
     @OptIn(ExperimentalContracts::class)
     suspend inline fun respond(
-        builder: EphemeralHybridMessageCreateBuilder.() -> Unit
+        builder: HybridMessageCreateBuilder.() -> Unit
     ): EphemeralHybridMessage {
         contract { callsInPlace(builder, InvocationKind.EXACTLY_ONCE) }
-        val builder = EphemeralHybridMessageCreateBuilder().apply(builder)
+        val builder = HybridMessageCreateBuilder(true).apply(builder)
 
         val (response, interaction) = if(isSlashContext) {
             val context = (slashContext as EphemeralSlashCommandContext<A>)
             kord.rest.interaction.createFollowupMessage(
                 context.interactionResponse.applicationId,
                 context.interactionResponse.token,
-                builder.toFollowupMessageCreateRequest()
+                builder.toFollowupRequest()
             ) to context.interactionResponse
         } else {
             kord.rest.channel.createMessage(
                 chatContext.channel.id,
-                builder.toMessageCreateRequest(messageReference = message?.id)
+                builder.toChatRequest(messageReference = message?.id)
             ) to null
         }
 

@@ -7,9 +7,9 @@ import com.kotlindiscord.kord.extensions.pagination.builders.PaginatorBuilder
 import com.kotlindiscord.kord.extensions.pagination.pages.Pages
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.entity.ReactionEmoji
-import dev.kord.rest.builder.message.create.embed
-import dev.kord.rest.builder.message.modify.embed
+import io.github.qbosst.kordex.builders.embed
 import io.github.qbosst.kordex.commands.hybrid.ephemeral.EphemeralHybridCommandContext
+import io.github.qbosst.kordex.components.applyComponents
 import io.github.qbosst.kordex.entity.EphemeralHybridMessage
 import java.util.*
 
@@ -32,9 +32,7 @@ class EphemeralHybridFollowupPaginator(
             message = context.respond {
                 embed { applyPage() }
 
-                with(this@EphemeralHybridFollowupPaginator.components) {
-                    this@respond.applyToMessage()
-                }
+                applyComponents(this@EphemeralHybridFollowupPaginator.components)
             }
         } else {
             updateButtons()
@@ -42,9 +40,7 @@ class EphemeralHybridFollowupPaginator(
             message!!.edit {
                 embed { applyPage() }
 
-                with(this@EphemeralHybridFollowupPaginator.components) {
-                    this@edit.applyToMessage()
-                }
+                applyComponents(this@EphemeralHybridFollowupPaginator.components)
             }
         }
     }

@@ -1,18 +1,18 @@
 plugins {
-    kotlin("jvm") version "1.5.30"
+    kotlin("jvm") version "1.6.10"
     `maven-publish`
     signing
 }
 
 project.group = "io.github.qbosst"
-project.version = "1.0.3-SNAPSHOT"
+project.version = "1.0.4-SNAPSHOT"
 val projectArtifactId = "kordex-hybrid-commands"
 val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 
 val releaseRepoUrl = "https://maven.kotlindiscord.com/repository/community-releases/"
 val snapshotRepoUrl = "https://maven.kotlindiscord.com/repository/community-snapshots/"
 
-val kordexVersion = "1.5.0-SNAPSHOT"
+val kordexVersion = "1.5.2-RC1"
 
 repositories {
     mavenCentral()
@@ -25,10 +25,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.kotlindiscord.kord.extensions:kord-extensions:$kordexVersion")
+    implementation("com.kotlindiscord.kord.extensions:kord-extensions:$kordexVersion")
     implementation(kotlin("stdlib"))
     testImplementation("com.kotlindiscord.kord.extensions:kord-extensions:$kordexVersion")
-    testImplementation("ch.qos.logback:logback-classic:1.2.5")
+    testImplementation("ch.qos.logback:logback-classic:1.2.10")
+    testImplementation("org.slf4j:slf4j-api:1.7.36")
 }
 
 val sourcesJar = task("sourceJar", Jar::class) {
