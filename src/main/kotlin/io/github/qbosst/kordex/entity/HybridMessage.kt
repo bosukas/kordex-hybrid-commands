@@ -56,6 +56,12 @@ class EphemeralHybridMessage(
         return EphemeralHybridMessage(Message(response.toData(), kord), applicationId, token, kord)
     }
 
+    suspend fun delete() {
+        if(!isInteraction) {
+            kord.rest.channel.deleteMessage(channelId, id)
+        }
+    }
+
     override fun withStrategy(strategy: EntitySupplyStrategy<*>): Strategizable = if(isInteraction) {
         EphemeralFollowupMessage(message, applicationId!!, token!!, kord, strategy.supply(kord))
     } else {
