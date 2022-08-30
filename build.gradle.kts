@@ -12,7 +12,7 @@ val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 val releaseRepoUrl = "https://maven.kotlindiscord.com/repository/community-releases/"
 val snapshotRepoUrl = "https://maven.kotlindiscord.com/repository/community-snapshots/"
 
-val kordexVersion = "1.5.2-RC1"
+val kordexVersion = "1.5.5-SNAPSHOT"
 
 repositories {
     mavenCentral()

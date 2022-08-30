@@ -5,6 +5,7 @@ import com.kotlindiscord.kord.extensions.checks.types.Check
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.Command
 import com.kotlindiscord.kord.extensions.commands.CommandContext
+import com.kotlindiscord.kord.extensions.commands.application.ApplicationCommand
 import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommand
 import com.kotlindiscord.kord.extensions.commands.chat.ChatCommand
 import com.kotlindiscord.kord.extensions.extensions.Extension
@@ -26,23 +27,10 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
     extension: Extension,
     open val arguments: (() -> A)? = null
 ): Command(extension), KoinComponent {
-    /** Translations provider, for retrieving translations. **/
-    val translationsProvider: TranslationsProvider by inject()
-
-    /** Bot settings object. **/
-    val settings: ExtensibleBotBuilder by inject()
-
-    /** Kord instance, backing the ExtensibleBot. **/
-    val kord: Kord by inject()
-
-    /** Sentry adapter, for easy access to Sentry functions. **/
-    val sentry: SentryAdapter by inject()
-
-    /** @suppress **/
-    open val checkList: MutableList<Check<Event>> = mutableListOf()
-
-    /** Permissions required to be able to run this command. **/
-    open val requiredPerms: MutableSet<Permission> = mutableSetOf()
+    /**
+     * @suppress
+     */
+    private val checkList: MutableList<Check<Event>> = mutableListOf()
 
     /** Command description, as displayed on Discord. **/
     open lateinit var description: String
@@ -98,6 +86,7 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
         slashCommand.description = this.description
         slashCommand.checkList.addAll(this.checkList)
         slashCommand.requiredPerms.addAll(this.requiredPerms)
+        slashCommand.allowInDms = this.slashCommandSettings.allowInDms
     }
 
     protected open fun applyHybridCommand(chatCommand: ChatCommand<*>) {
@@ -113,6 +102,8 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
 
     open class SlashCommandSettings {
         open var enabled: Boolean = true
+
+        open var allowInDms: Boolean = true
     }
 
     open class ChatCommandSettings {
