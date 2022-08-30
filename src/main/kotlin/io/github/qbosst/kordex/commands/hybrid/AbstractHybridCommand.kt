@@ -27,10 +27,8 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
     extension: Extension,
     open val arguments: (() -> A)? = null
 ): Command(extension), KoinComponent {
-    /**
-     * @suppress
-     */
-    private val checkList: MutableList<Check<Event>> = mutableListOf()
+
+    open val checkList: MutableList<Check<Event>> = mutableListOf()
 
     /** Command description, as displayed on Discord. **/
     open lateinit var description: String
