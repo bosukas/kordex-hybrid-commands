@@ -5,7 +5,7 @@ plugins {
 }
 
 project.group = "io.github.qbosst"
-project.version = "1.0.4-SNAPSHOT"
+project.version = "1.0.5-SNAPSHOT"
 val projectArtifactId = "kordex-hybrid-commands"
 val projectGithubUrl = "https://github.com/qbosst/$projectArtifactId"
 

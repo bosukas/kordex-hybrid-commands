@@ -3,9 +3,8 @@ import io.github.qbosst.kordex.commands.hybrid.*
 import io.github.qbosst.kordex.entity.EphemeralHybridMessage
 import kotlinx.coroutines.delay
 import kotlin.system.measureTimeMillis
-import kotlin.time.measureTime
 
-class TestExtension: Extension() {
+class TestExtension : Extension() {
     override val name: String get() = "test"
 
     override suspend fun setup() {
@@ -81,6 +80,18 @@ class TestExtension: Extension() {
                     val message: EphemeralHybridMessage
                     val timeMs = measureTimeMillis { message = respond { content = "Pinging..." } }
                     message.edit { content = "$timeMs ms" }
+                }
+            }
+        }
+
+        publicHybridCommand {
+            name = "hybrid-dm-disable"
+            description = "Tests hybrid command with DM disabled"
+            allowInDms = false
+
+            action {
+                respond {
+                    content = "You should only be able to see this in a guild"
                 }
             }
         }
