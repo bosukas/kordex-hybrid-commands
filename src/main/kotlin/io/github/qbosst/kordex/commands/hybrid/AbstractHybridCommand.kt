@@ -1,6 +1,6 @@
 package io.github.qbosst.kordex.commands.hybrid
 
-import com.kotlindiscord.kord.extensions.builders.ExtensibleBotBuilder
+import com.kotlindiscord.kord.extensions.checks.notChannelType
 import com.kotlindiscord.kord.extensions.checks.types.Check
 import com.kotlindiscord.kord.extensions.commands.Arguments
 import com.kotlindiscord.kord.extensions.commands.Command
@@ -8,13 +8,10 @@ import com.kotlindiscord.kord.extensions.commands.CommandContext
 import com.kotlindiscord.kord.extensions.commands.application.slash.SlashCommand
 import com.kotlindiscord.kord.extensions.commands.chat.ChatCommand
 import com.kotlindiscord.kord.extensions.extensions.Extension
-import com.kotlindiscord.kord.extensions.i18n.TranslationsProvider
-import com.kotlindiscord.kord.extensions.sentry.SentryAdapter
+import dev.kord.common.entity.ChannelType
 import dev.kord.common.entity.Permission
-import dev.kord.core.Kord
 import dev.kord.core.event.Event
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * Abstract class representing a hybrid command.
@@ -25,24 +22,9 @@ import org.koin.core.component.inject
 abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Arguments, S : SlashCommand<*, A>>(
     extension: Extension,
     open val arguments: (() -> A)? = null
-): Command(extension), KoinComponent {
-    /** Translations provider, for retrieving translations. **/
-    val translationsProvider: TranslationsProvider by inject()
+) : Command(extension), KoinComponent {
 
-    /** Bot settings object. **/
-    val settings: ExtensibleBotBuilder by inject()
-
-    /** Kord instance, backing the ExtensibleBot. **/
-    val kord: Kord by inject()
-
-    /** Sentry adapter, for easy access to Sentry functions. **/
-    val sentry: SentryAdapter by inject()
-
-    /** @suppress **/
     open val checkList: MutableList<Check<Event>> = mutableListOf()
-
-    /** Permissions required to be able to run this command. **/
-    open val requiredPerms: MutableSet<Permission> = mutableSetOf()
 
     /** Command description, as displayed on Discord. **/
     open lateinit var description: String
@@ -52,6 +34,8 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
 
     /** Whether this command has a body/action set. **/
     open val hasBody: Boolean get() = ::body.isInitialized
+
+    open var allowInDms: Boolean = extension.allowApplicationCommandInDMs
 
     protected abstract val context: (CommandContext) -> C
 
@@ -98,6 +82,7 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
         slashCommand.description = this.description
         slashCommand.checkList.addAll(this.checkList)
         slashCommand.requiredPerms.addAll(this.requiredPerms)
+        slashCommand.allowInDms = this.allowInDms
     }
 
     protected open fun applyHybridCommand(chatCommand: ChatCommand<*>) {
@@ -109,6 +94,12 @@ abstract class AbstractHybridCommand<C : HybridCommandContext<*, A>, A : Argumen
         chatCommand.enabled = this.chatCommandSettings.enabled
         chatCommand.hidden = this.chatCommandSettings.hidden
         chatCommand.aliases = this.chatCommandSettings.aliases
+
+        if (!allowInDms) {
+            chatCommand.check {
+                notChannelType(ChannelType.DM)
+            }
+        }
     }
 
     open class SlashCommandSettings {
